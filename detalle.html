@@ -154,16 +154,16 @@
     </div>
     <div class="grandrow">
       <div class="grand">
-        <div class="lbl">Total consolidado · Gs.</div>
+        <div class="lbl" id="lblGs">Total consolidado · Gs.</div>
         <div class="val" id="grandVal">—</div>
       </div>
       <div class="grand sm">
-        <div class="lbl">Total consolidado · USD</div>
+        <div class="lbl" id="lblUsd">Total consolidado · USD</div>
         <div class="val" id="grandUsd">—</div>
       </div>
     </div>
     <div class="fx">
-      <div class="fxmain"><span>US$ 1 =</span><b id="fxRate">—</b><span>Gs.</span></div>
+      <div class="fxmain" id="fxMain"><span>US$ 1 =</span><b id="fxRate">—</b><span>Gs.</span></div>
       <span class="src" id="fxSrc"></span>
       <span class="spacer"></span>
       <span class="pill"><span class="dot"></span><span>Sólo lectura</span></span>
@@ -230,6 +230,17 @@ window.DATOS_RESPALDO = null;
   function money(n, cur){ return cur === 'USD' ? usd(n) : gs(n); }
   function curTag(c){ return c === 'USD' ? 'USD' : 'Gs.'; }
   function rate(){ return Number(state && state.fx && state.fx.rate) || 0; }
+
+  /* Si la planilla no trae tipo de cambio, no se puede sumar Gs. con US$:
+     la página pasa a mostrar cada monto en su moneda original, sin convertir. */
+  function sinTc(){ return !rate(); }
+  function mixto(t){
+    if (!t.pyg && !t.usd) return '—';
+    if (!t.usd) return gs(t.pyg);
+    if (!t.pyg) return usd(t.usd);
+    return gs(t.pyg) + '  +  ' + usd(t.usd);
+  }
+  function totalDe(t){ return sinTc() ? mixto(t) : gs(t.pyg + t.usd * rate()); }
 
   function el(tag, cls, text){
     var n = document.createElement(tag);
@@ -449,13 +460,25 @@ window.DATOS_RESPALDO = null;
   /* ---------- render ---------- */
   function paintHeader(){
     var c = consolidated(), r = rate();
-    document.getElementById('grandVal').textContent = gs(c.gs);
-    document.getElementById('grandUsd').textContent = r > 0 ? usd(c.gs / r) : 'US$ —';
-    document.getElementById('fxRate').textContent = r ? fmtPyg.format(Math.round(r)) : '—';
-
     var d = fmtDate(state.fx.asOf, false);
-    document.getElementById('fxSrc').textContent =
-      r ? (state.fx.source || 'cotización diaria') + (d ? ' · ' + d : '') : 'sin cotización';
+
+    if (sinTc()){
+      document.getElementById('lblGs').textContent = 'Total en guaraníes';
+      document.getElementById('lblUsd').textContent = 'Total en dólares';
+      document.getElementById('grandVal').textContent = gs(c.pyg);
+      document.getElementById('grandUsd').textContent = usd(c.usd);
+      document.getElementById('fxMain').style.display = 'none';
+      document.getElementById('fxSrc').textContent = 'Cada monto en su moneda original · sin conversión';
+    } else {
+      document.getElementById('lblGs').textContent = 'Total consolidado · Gs.';
+      document.getElementById('lblUsd').textContent = 'Total consolidado · USD';
+      document.getElementById('grandVal').textContent = gs(c.gs);
+      document.getElementById('grandUsd').textContent = usd(c.gs / r);
+      document.getElementById('fxMain').style.display = '';
+      document.getElementById('fxRate').textContent = fmtPyg.format(Math.round(r));
+      document.getElementById('fxSrc').textContent =
+        (state.fx.source || 'cotización diaria') + (d ? ' · ' + d : '');
+    }
 
     var s = fmtDate(state.actualizado, true);
     document.getElementById('stamp').textContent = s ? 'Actualizado ' + s + ' hs' : '';
@@ -517,7 +540,7 @@ window.DATOS_RESPALDO = null;
     var head = el('div', 'fundtot');
     var left = el('div');
     left.appendChild(el('div', 'lbl', label(f) + ' · total del fondo'));
-    left.appendChild(el('div', 'big', gs(t.pyg + t.usd * rate())));
+    left.appendChild(el('div', 'big', totalDe(t)));
     head.appendChild(left);
     var right = el('div', 'split');
     if (t.pyg) right.appendChild(el('div', null, gs(t.pyg)));
@@ -535,7 +558,7 @@ window.DATOS_RESPALDO = null;
     if (!t.pyg && !t.usd) return '—';
     if (!t.usd) return gs(t.pyg);
     if (!t.pyg) return usd(t.usd);
-    return gs(t.pyg + t.usd * rate());
+    return sinTc() ? mixto(t) : gs(t.pyg + t.usd * rate());
   }
 
   function summaryView(){
@@ -546,7 +569,7 @@ window.DATOS_RESPALDO = null;
     var table = el('table', 'sum');
     var thead = document.createElement('thead');
     var htr = document.createElement('tr');
-    ['Fondo', 'Bancos', 'Inversiones', 'Total (Gs.)'].forEach(function(h){ htr.appendChild(el('th', null, h)); });
+    ['Fondo', 'Bancos', 'Inversiones', sinTc() ? 'Total' : 'Total (Gs.)'].forEach(function(h){ htr.appendChild(el('th', null, h)); });
     thead.appendChild(htr); table.appendChild(thead);
 
     var tbody = document.createElement('tbody');
@@ -561,7 +584,7 @@ window.DATOS_RESPALDO = null;
       tr.appendChild(el('td', 'nm', label(f)));
       tr.appendChild(el('td', null, cellMix(b)));
       tr.appendChild(el('td', null, cellMix(i)));
-      tr.appendChild(el('td', null, gs(g)));
+      tr.appendChild(el('td', null, totalDe(t)));
       tr.style.cursor = 'pointer';
       tr.onclick = function(){ go(f.id); };
       tbody.appendChild(tr);
@@ -572,7 +595,7 @@ window.DATOS_RESPALDO = null;
     tot.appendChild(el('td', null, 'TOTAL'));
     tot.appendChild(el('td', null, ''));
     tot.appendChild(el('td', null, ''));
-    tot.appendChild(el('td', null, gs(sum.gs)));
+    tot.appendChild(el('td', null, totalDe(sum)));
     tbody.appendChild(tot);
     table.appendChild(tbody);
     card.appendChild(table);
@@ -581,10 +604,13 @@ window.DATOS_RESPALDO = null;
     var det = el('div', 'card');
     det.appendChild(el('h2', null, 'Totales por moneda'));
     var rows = el('div', 'rows');
-    [['Saldos y fondos en guaraníes', gs(sum.pyg)],
-     ['Saldos y fondos en dólares', usd(sum.usd)],
-     ['Dólares convertidos a Gs. (TC ' + (rate() ? fmtPyg.format(Math.round(rate())) : '—') + ')', gs(sum.usd * rate())]
-    ].forEach(function(p){
+    var filas = [['Saldos y fondos en guaraníes', gs(sum.pyg)],
+                 ['Saldos y fondos en dólares', usd(sum.usd)]];
+    if (!sinTc()){
+      filas.push(['Dólares convertidos a Gs. (TC ' + fmtPyg.format(Math.round(rate())) + ')',
+                  gs(sum.usd * rate())]);
+    }
+    filas.forEach(function(p){
       var r = el('div', 'row');
       r.appendChild(el('div', 'nm', p[0]));
       r.appendChild(el('div', 'mny', p[1]));
@@ -592,9 +618,15 @@ window.DATOS_RESPALDO = null;
     });
     det.appendChild(rows);
     var sub = el('div', 'subtot');
-    sub.appendChild(el('div', null, 'Total consolidado'));
+    sub.appendChild(el('div', null, sinTc() ? 'Total, sin convertir' : 'Total consolidado'));
     var v = el('div', 'v');
-    v.appendChild(el('span', null, gs(sum.gs)));
+    if (sinTc()){
+      if (sum.pyg) v.appendChild(el('span', null, gs(sum.pyg)));
+      if (sum.usd) v.appendChild(el('span', null, usd(sum.usd)));
+      if (!sum.pyg && !sum.usd) v.appendChild(el('span', null, '—'));
+    } else {
+      v.appendChild(el('span', null, gs(sum.gs)));
+    }
     sub.appendChild(v);
     det.appendChild(sub);
     frag.appendChild(det);

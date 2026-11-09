@@ -1,9 +1,9 @@
 {
   "actualizado": "2026-11-09T12:00:00Z",
   "fx": {
-    "rate": 6108,
-    "source": "Cotización de mercado USD/PYG (≈ ref. BCP)",
-    "asOf": "2026-11-07T13:00:00Z"
+    "rate": 0,
+    "source": "sin conversión — montos en su moneda original",
+    "asOf": ""
   },
   "fondos": [
     {
@@ -11,14 +11,38 @@
       "nombre": "Link Center",
       "moneda": "USD",
       "bancos": [
-        { "label": "", "amount": 0, "currency": "USD" },
-        { "label": "", "amount": 0, "currency": "USD" },
-        { "label": "", "amount": 0, "currency": "USD" }
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        }
       ],
       "inversiones": [
-        { "label": "", "amount": 0, "currency": "USD" },
-        { "label": "", "amount": 0, "currency": "USD" },
-        { "label": "", "amount": 0, "currency": "USD" }
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        }
       ]
     },
     {
@@ -26,14 +50,38 @@
       "nombre": "FINI",
       "moneda": "USD",
       "bancos": [
-        { "label": "", "amount": 0, "currency": "USD" },
-        { "label": "", "amount": 0, "currency": "USD" },
-        { "label": "", "amount": 0, "currency": "USD" }
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        }
       ],
       "inversiones": [
-        { "label": "", "amount": 0, "currency": "USD" },
-        { "label": "", "amount": 0, "currency": "USD" },
-        { "label": "", "amount": 0, "currency": "USD" }
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        }
       ]
     },
     {
@@ -41,14 +89,38 @@
       "nombre": "Eco 1",
       "moneda": "PYG",
       "bancos": [
-        { "label": "", "amount": 0, "currency": "PYG" },
-        { "label": "", "amount": 0, "currency": "PYG" },
-        { "label": "", "amount": 0, "currency": "PYG" }
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "PYG"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "PYG"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "PYG"
+        }
       ],
       "inversiones": [
-        { "label": "", "amount": 0, "currency": "PYG" },
-        { "label": "", "amount": 0, "currency": "PYG" },
-        { "label": "", "amount": 0, "currency": "PYG" }
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "PYG"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "PYG"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "PYG"
+        }
       ]
     },
     {
@@ -56,14 +128,38 @@
       "nombre": "Eco 2",
       "moneda": "USD",
       "bancos": [
-        { "label": "", "amount": 0, "currency": "USD" },
-        { "label": "", "amount": 0, "currency": "USD" },
-        { "label": "", "amount": 0, "currency": "USD" }
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        }
       ],
       "inversiones": [
-        { "label": "", "amount": 0, "currency": "USD" },
-        { "label": "", "amount": 0, "currency": "USD" },
-        { "label": "", "amount": 0, "currency": "USD" }
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "USD"
+        }
       ]
     },
     {
@@ -71,14 +167,38 @@
       "nombre": "Orquídeas",
       "moneda": "PYG",
       "bancos": [
-        { "label": "", "amount": 0, "currency": "PYG" },
-        { "label": "", "amount": 0, "currency": "PYG" },
-        { "label": "", "amount": 0, "currency": "PYG" }
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "PYG"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "PYG"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "PYG"
+        }
       ],
       "inversiones": [
-        { "label": "", "amount": 0, "currency": "PYG" },
-        { "label": "", "amount": 0, "currency": "PYG" },
-        { "label": "", "amount": 0, "currency": "PYG" }
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "PYG"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "PYG"
+        },
+        {
+          "label": "",
+          "amount": 0,
+          "currency": "PYG"
+        }
       ]
     }
   ]

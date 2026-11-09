@@ -137,6 +137,8 @@
   .seg:hover,.seg:focus-visible{filter:brightness(1.08)}
   .seg:focus-visible{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink-3)}
   .vacio{font-size:13px;color:var(--ink-3);padding:6px 0 2px}
+  .grupo{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--ink-3);margin:0 0 9px}
+  .grupo.sep{margin-top:20px;padding-top:16px;border-top:1px solid var(--line-2)}
 
   #tip{
     position:fixed;z-index:50;pointer-events:none;opacity:0;transform:translateY(-4px);
@@ -235,16 +237,16 @@
     </div>
     <div class="grandrow">
       <div class="grand">
-        <div class="lbl">Total consolidado · Gs.</div>
+        <div class="lbl" id="lblGs">Total consolidado · Gs.</div>
         <div class="val" id="grandVal">—</div>
       </div>
       <div class="grand sm">
-        <div class="lbl">Total consolidado · USD</div>
+        <div class="lbl" id="lblUsd">Total consolidado · USD</div>
         <div class="val" id="grandUsd">—</div>
       </div>
     </div>
     <div class="fx">
-      <div class="fxmain"><span>US$ 1 =</span><b id="fxRate">—</b><span>Gs.</span></div>
+      <div class="fxmain" id="fxMain"><span>US$ 1 =</span><b id="fxRate">—</b><span>Gs.</span></div>
       <span class="src" id="fxSrc"></span>
       <span class="spacer"></span>
       <span class="pill"><span class="dot"></span><span>Sólo lectura</span></span>
@@ -311,6 +313,17 @@ window.DATOS_RESPALDO = null;
   function curTag(c){ return c === 'USD' ? 'USD' : 'Gs.'; }
   function pct(part, total){ return total ? fmtPct.format(part / total * 100) + '%' : '—'; }
   function rate(){ return Number(state && state.fx && state.fx.rate) || 0; }
+
+  /* Si la planilla no trae tipo de cambio, no se puede sumar Gs. con US$:
+     la página pasa a mostrar cada monto en su moneda original, sin convertir. */
+  function sinTc(){ return !rate(); }
+  function mixto(t){
+    if (!t.pyg && !t.usd) return '—';
+    if (!t.usd) return gs(t.pyg);
+    if (!t.pyg) return usd(t.usd);
+    return gs(t.pyg) + '  +  ' + usd(t.usd);
+  }
+  function totalDe(t){ return sinTc() ? mixto(t) : gs(t.gs); }
   function corto(n){
     n = Math.round(Number(n) || 0);
     if (Math.abs(n) >= 1e9) return fmtPct.format(n / 1e9) + ' mil M';
@@ -521,13 +534,21 @@ window.DATOS_RESPALDO = null;
         }
       };
     });
-    var tot = { gs:0, pyg:0, usd:0, bancos:0, inversiones:0, conSaldo:0 };
+    var tot = { gs:0, pyg:0, usd:0, bancos:0, inversiones:0, conSaldo:0,
+                bancosPyg:0, bancosUsd:0, invPyg:0, invUsd:0 };
     empresas.forEach(function(e){
       tot.gs += e.gs; tot.pyg += e.pyg; tot.usd += e.usd;
       tot.bancos += e.bancos.gs; tot.inversiones += e.inversiones.gs;
-      if (e.gs) tot.conSaldo++;
+      tot.bancosPyg += e.bancos.pyg; tot.bancosUsd += e.bancos.usd;
+      tot.invPyg += e.inversiones.pyg; tot.invUsd += e.inversiones.usd;
+      // "con saldo" no puede depender de la conversión: se mira cada moneda
+      if (e.pyg || e.usd) tot.conSaldo++;
     });
-    var orden = empresas.slice().sort(function(a, b){ return b.gs - a.gs; });
+    // Sin tipo de cambio no hay un total comparable entre empresas:
+    // se respeta el orden de la planilla en vez de inventar un ranking.
+    var orden = sinTc()
+      ? empresas.slice()
+      : empresas.slice().sort(function(a, b){ return b.gs - a.gs; });
     return { empresas: empresas, ranking: orden, tot: tot, max: orden.length ? orden[0].gs : 0 };
   }
 
@@ -559,13 +580,27 @@ window.DATOS_RESPALDO = null;
   /* ---------- render ---------- */
   function paintHeader(){
     var R = resumen(), r = rate();
-    document.getElementById('grandVal').textContent = gs(R.tot.gs);
-    document.getElementById('grandUsd').textContent = r > 0 ? usd(R.tot.gs / r) : 'US$ —';
-    document.getElementById('fxRate').textContent = r ? fmtPyg.format(Math.round(r)) : '—';
-
     var d = fmtDate(state.fx.asOf, false);
-    document.getElementById('fxSrc').textContent =
-      r ? (state.fx.source || 'cotización diaria') + (d ? ' · ' + d : '') : 'sin cotización';
+
+    if (sinTc()){
+      // cada moneda por separado, sin convertir
+      document.getElementById('lblGs').textContent = 'Total en guaraníes';
+      document.getElementById('lblUsd').textContent = 'Total en dólares';
+      document.getElementById('grandVal').textContent = gs(R.tot.pyg);
+      document.getElementById('grandUsd').textContent = usd(R.tot.usd);
+      document.getElementById('fxMain').style.display = 'none';
+      document.getElementById('fxSrc').textContent =
+        'Cada monto en su moneda original · sin conversión';
+    } else {
+      document.getElementById('lblGs').textContent = 'Total consolidado · Gs.';
+      document.getElementById('lblUsd').textContent = 'Total consolidado · USD';
+      document.getElementById('grandVal').textContent = gs(R.tot.gs);
+      document.getElementById('grandUsd').textContent = usd(R.tot.gs / r);
+      document.getElementById('fxMain').style.display = '';
+      document.getElementById('fxRate').textContent = fmtPyg.format(Math.round(r));
+      document.getElementById('fxSrc').textContent =
+        (state.fx.source || 'cotización diaria') + (d ? ' · ' + d : '');
+    }
 
     var s = fmtDate(state.actualizado, true);
     document.getElementById('stamp').textContent = s ? 'Actualizado ' + s + ' hs' : '';
@@ -590,17 +625,31 @@ window.DATOS_RESPALDO = null;
   function kpisEl(R){
     var box = el('div', 'kpis');
     var t = R.tot;
+
     box.appendChild(kpiEl('Empresas con saldo',
       t.conSaldo + ' de ' + R.empresas.length,
       t.conSaldo === R.empresas.length ? 'todas cargadas' : (R.empresas.length - t.conSaldo) + ' sin saldos',
       R.empresas.length ? t.conSaldo / R.empresas.length : 0));
-    box.appendChild(kpiEl('En bancos', gs(t.bancos),
-      pct(t.bancos, t.gs) + ' del total', t.gs ? t.bancos / t.gs : 0));
-    box.appendChild(kpiEl('En inversiones', gs(t.inversiones),
-      pct(t.inversiones, t.gs) + ' del total', t.gs ? t.inversiones / t.gs : 0));
-    box.appendChild(kpiEl('Exposición en dólares', usd(t.usd),
-      t.gs ? pct(t.usd * rate(), t.gs) + ' del total' : '—',
-      t.gs ? (t.usd * rate()) / t.gs : 0));
+
+    if (sinTc()){
+      // sin tipo de cambio no hay porcentajes del total: se muestran las dos monedas
+      box.appendChild(kpiEl('En bancos',
+        t.bancosPyg ? gs(t.bancosPyg) : usd(t.bancosUsd),
+        (t.bancosPyg && t.bancosUsd) ? '+ ' + usd(t.bancosUsd) : 'suma de las cuentas bancarias'));
+      box.appendChild(kpiEl('En inversiones',
+        t.invPyg ? gs(t.invPyg) : usd(t.invUsd),
+        (t.invPyg && t.invUsd) ? '+ ' + usd(t.invUsd) : 'suma de los fondos mutuos'));
+      box.appendChild(kpiEl('En dólares', usd(t.usd),
+        t.pyg ? 'y ' + gs(t.pyg) + ' en guaraníes' : 'no hay saldos en guaraníes'));
+    } else {
+      box.appendChild(kpiEl('En bancos', gs(t.bancos),
+        pct(t.bancos, t.gs) + ' del total', t.gs ? t.bancos / t.gs : 0));
+      box.appendChild(kpiEl('En inversiones', gs(t.inversiones),
+        pct(t.inversiones, t.gs) + ' del total', t.gs ? t.inversiones / t.gs : 0));
+      box.appendChild(kpiEl('Exposición en dólares', usd(t.usd),
+        t.gs ? pct(t.usd * rate(), t.gs) + ' del total' : '—',
+        t.gs ? (t.usd * rate()) / t.gs : 0));
+    }
     return box;
   }
 
@@ -612,50 +661,32 @@ window.DATOS_RESPALDO = null;
     return l;
   }
 
-  function barrasEl(R){
-    var card = el('div', 'card');
-    var h = el('h2', null, 'Total por empresa');
-    h.appendChild(leyenda());
-    card.appendChild(h);
-    var pad = el('div', 'pad');
-
-    if (!R.max){
-      pad.appendChild(el('div', 'vacio', 'Todavía no hay saldos cargados en la planilla, así que no hay nada para comparar.'));
-      card.appendChild(pad);
-      return card;
-    }
-
+  /* items: [{ nombre, moneda, b, i, total }] ya ordenados y en UNA sola moneda */
+  function barrasDe(items, max, total, fmt){
     var bars = el('div', 'bars');
-    R.ranking.forEach(function(e){
+    items.forEach(function(e){
       var row = el('div', 'barrow');
 
       var head = el('div', 'barhead');
       var nm = el('div', 'nm', e.nombre);
-      nm.appendChild(el('em', null, curTag(e.moneda)));
+      // sin tipo de cambio cada gráfico ya es de una sola moneda: la etiqueta sobra
+      if (e.moneda) nm.appendChild(el('em', null, curTag(e.moneda)));
       head.appendChild(nm);
-      var tot = el('div', 'tot', gs(e.gs));
-      tot.appendChild(el('span', 'pct', pct(e.gs, R.tot.gs)));
+      var tot = el('div', 'tot', fmt(e.total));
+      tot.appendChild(el('span', 'pct', pct(e.total, total)));
       head.appendChild(tot);
       row.appendChild(head);
 
       var track = el('div', 'track');
-      [['b', 'Bancos', e.bancos], ['i', 'Inversiones', e.inversiones]].forEach(function(p){
-        var v = p[2].gs;
+      [['b', 'Bancos', e.b], ['i', 'Inversiones', e.i]].forEach(function(p){
+        var v = p[2];
         if (v <= 0) return;
         var seg = document.createElement('button');
         seg.type = 'button';
         seg.className = 'seg ' + p[0];
-        seg.style.width = (v / R.max * 100) + '%';
+        seg.style.width = (v / max * 100) + '%';
         seg.setAttribute('tabindex', '0');
-        var lineas = [
-          p[1] + ': ' + gs(v),
-          pct(v, e.gs) + ' de ' + e.nombre
-        ];
-        if (p[2].pyg && p[2].usd){
-          lineas.push('Gs. ' + fmtPyg.format(Math.round(p[2].pyg)) + ' + ' + usd(p[2].usd));
-        } else if (p[2].usd){
-          lineas.push(usd(p[2].usd) + ' al TC ' + fmtPyg.format(Math.round(rate())));
-        }
+        var lineas = [p[1] + ': ' + fmt(v), pct(v, e.total) + ' de ' + e.nombre];
         seg.setAttribute('aria-label', e.nombre + ' · ' + lineas.join(' · '));
         seg.onmouseenter = function(ev){ tipShow(ev, e.nombre, lineas); };
         seg.onmousemove = tipMove;
@@ -670,7 +701,60 @@ window.DATOS_RESPALDO = null;
       row.appendChild(track);
       bars.appendChild(row);
     });
-    pad.appendChild(bars);
+    return bars;
+  }
+
+  function grupoMoneda(R, campo){
+    var items = R.empresas.map(function(e){
+      return {
+        nombre: e.nombre, moneda: null,
+        b: e.bancos[campo], i: e.inversiones[campo],
+        total: e.bancos[campo] + e.inversiones[campo]
+      };
+    }).filter(function(x){ return x.total > 0; })
+      .sort(function(a, b){ return b.total - a.total; });
+    var total = 0, max = 0;
+    items.forEach(function(x){ total += x.total; if (x.total > max) max = x.total; });
+    return { items: items, total: total, max: max };
+  }
+
+  function barrasEl(R){
+    var card = el('div', 'card');
+    var h = el('h2', null, 'Total por empresa');
+    h.appendChild(leyenda());
+    card.appendChild(h);
+    var pad = el('div', 'pad');
+
+    if (sinTc()){
+      // dos rankings separados: guaraníes y dólares no se mezclan sin cotización
+      var g = grupoMoneda(R, 'pyg'), u = grupoMoneda(R, 'usd');
+      if (!g.items.length && !u.items.length){
+        pad.appendChild(el('div', 'vacio', 'Todavía no hay saldos cargados en la planilla, así que no hay nada para comparar.'));
+        card.appendChild(pad);
+        return card;
+      }
+      if (g.items.length){
+        pad.appendChild(el('div', 'grupo', 'En guaraníes'));
+        pad.appendChild(barrasDe(g.items, g.max, g.total, gs));
+      }
+      if (u.items.length){
+        pad.appendChild(el('div', 'grupo' + (g.items.length ? ' sep' : ''), 'En dólares'));
+        pad.appendChild(barrasDe(u.items, u.max, u.total, usd));
+      }
+      card.appendChild(pad);
+      return card;
+    }
+
+    if (!R.max){
+      pad.appendChild(el('div', 'vacio', 'Todavía no hay saldos cargados en la planilla, así que no hay nada para comparar.'));
+      card.appendChild(pad);
+      return card;
+    }
+
+    var items = R.ranking.map(function(e){
+      return { nombre:e.nombre, moneda:e.moneda, b:e.bancos.gs, i:e.inversiones.gs, total:e.gs };
+    });
+    pad.appendChild(barrasDe(items, R.max, R.tot.gs, gs));
     card.appendChild(pad);
     return card;
   }
@@ -678,41 +762,57 @@ window.DATOS_RESPALDO = null;
   function tablaEl(R){
     var card = el('div', 'card');
     var h = el('h2', null, 'Detalle por empresa');
-    h.appendChild(el('span', 'hint', 'los mismos números del gráfico, en tabla'));
+    h.appendChild(el('span', 'hint', sinTc()
+      ? 'cada monto en su moneda original'
+      : 'ordenadas de mayor a menor'));
     card.appendChild(h);
 
     var sc = el('div', 'scroll');
     var tb = document.createElement('table');
     var thead = document.createElement('thead');
     var htr = document.createElement('tr');
-    ['Empresa', 'Bancos (Gs.)', 'Inversiones (Gs.)', 'Total (Gs.)', '% del total', 'En US$'].forEach(function(t){
-      htr.appendChild(el('th', null, t));
-    });
+    var cols = sinTc()
+      ? ['Empresa', 'Bancos', 'Inversiones', 'Total']
+      : ['Empresa', 'Bancos (Gs.)', 'Inversiones (Gs.)', 'Total (Gs.)', '% del total', 'En US$'];
+    cols.forEach(function(t){ htr.appendChild(el('th', null, t)); });
     thead.appendChild(htr); tb.appendChild(thead);
 
     var body = document.createElement('tbody');
     R.ranking.forEach(function(e){
       var tr = document.createElement('tr');
-      if (!e.gs) tr.className = 'nil';
+      if (!e.pyg && !e.usd) tr.className = 'nil';
       var nm = el('td', 'nm', e.nombre);
       nm.appendChild(el('span', 'pct', ' (' + curTag(e.moneda) + ')'));
       tr.appendChild(nm);
-      tr.appendChild(el('td', null, e.bancos.gs ? fmtPyg.format(Math.round(e.bancos.gs)) : '—'));
-      tr.appendChild(el('td', null, e.inversiones.gs ? fmtPyg.format(Math.round(e.inversiones.gs)) : '—'));
-      tr.appendChild(el('td', null, fmtPyg.format(Math.round(e.gs))));
-      tr.appendChild(el('td', null, pct(e.gs, R.tot.gs)));
-      tr.appendChild(el('td', null, e.usd ? fmtUsd.format(e.usd) : '—'));
+      if (sinTc()){
+        // cada celda en su moneda original
+        tr.appendChild(el('td', null, mixto(e.bancos)));
+        tr.appendChild(el('td', null, mixto(e.inversiones)));
+        tr.appendChild(el('td', null, mixto(e)));
+      } else {
+        tr.appendChild(el('td', null, e.bancos.gs ? fmtPyg.format(Math.round(e.bancos.gs)) : '—'));
+        tr.appendChild(el('td', null, e.inversiones.gs ? fmtPyg.format(Math.round(e.inversiones.gs)) : '—'));
+        tr.appendChild(el('td', null, fmtPyg.format(Math.round(e.gs))));
+        tr.appendChild(el('td', null, pct(e.gs, R.tot.gs)));
+        tr.appendChild(el('td', null, e.usd ? fmtUsd.format(e.usd) : '—'));
+      }
       body.appendChild(tr);
     });
 
     var tot = document.createElement('tr');
     tot.className = 'tot';
     tot.appendChild(el('td', null, 'TOTAL'));
-    tot.appendChild(el('td', null, fmtPyg.format(Math.round(R.tot.bancos))));
-    tot.appendChild(el('td', null, fmtPyg.format(Math.round(R.tot.inversiones))));
-    tot.appendChild(el('td', null, fmtPyg.format(Math.round(R.tot.gs))));
-    tot.appendChild(el('td', null, R.tot.gs ? '100,0%' : '—'));
-    tot.appendChild(el('td', null, R.tot.usd ? fmtUsd.format(R.tot.usd) : '—'));
+    if (sinTc()){
+      tot.appendChild(el('td', null, mixto({ pyg:R.tot.bancosPyg, usd:R.tot.bancosUsd })));
+      tot.appendChild(el('td', null, mixto({ pyg:R.tot.invPyg, usd:R.tot.invUsd })));
+      tot.appendChild(el('td', null, mixto(R.tot)));
+    } else {
+      tot.appendChild(el('td', null, fmtPyg.format(Math.round(R.tot.bancos))));
+      tot.appendChild(el('td', null, fmtPyg.format(Math.round(R.tot.inversiones))));
+      tot.appendChild(el('td', null, fmtPyg.format(Math.round(R.tot.gs))));
+      tot.appendChild(el('td', null, R.tot.gs ? '100,0%' : '—'));
+      tot.appendChild(el('td', null, R.tot.usd ? fmtUsd.format(R.tot.usd) : '—'));
+    }
     body.appendChild(tot);
 
     tb.appendChild(body);
@@ -725,12 +825,18 @@ window.DATOS_RESPALDO = null;
     var c = el('div', 'emp');
     var eh = el('div', 'eh');
     eh.appendChild(el('div', 'en', e.nombre + ' (' + curTag(e.moneda) + ')'));
-    eh.appendChild(el('div', 'ev', gs(e.gs)));
-    var partes = [];
-    if (e.pyg) partes.push('Gs. ' + fmtPyg.format(Math.round(e.pyg)));
-    if (e.usd) partes.push(usd(e.usd));
-    eh.appendChild(el('div', 'es', (partes.length ? partes.join(' + ') : 'sin saldos') +
-      (e.gs ? ' · ' + pct(e.gs, R.tot.gs) + ' del total' : '')));
+    eh.appendChild(el('div', 'ev', totalDe(e)));
+    if (sinTc()){
+      eh.appendChild(el('div', 'es', (e.pyg && e.usd)
+        ? 'dos monedas, sin convertir'
+        : ((e.pyg || e.usd) ? 'en su moneda original' : 'sin saldos')));
+    } else {
+      var partes = [];
+      if (e.pyg) partes.push('Gs. ' + fmtPyg.format(Math.round(e.pyg)));
+      if (e.usd) partes.push(usd(e.usd));
+      eh.appendChild(el('div', 'es', (partes.length ? partes.join(' + ') : 'sin saldos') +
+        (e.gs ? ' · ' + pct(e.gs, R.tot.gs) + ' del total' : '')));
+    }
     c.appendChild(eh);
 
     [['Bancos', 'sw-b', e.filas.bancos, e.bancos], ['Inversiones', 'sw-i', e.filas.inversiones, e.inversiones]]
@@ -738,7 +844,7 @@ window.DATOS_RESPALDO = null;
       var g = el('div', 'grp');
       g.appendChild(el('i', 'swatch ' + p[1]));
       g.appendChild(el('span', null, p[0]));
-      if (p[3].gs) g.appendChild(el('span', 'hint', ' · ' + gs(p[3].gs)));
+      if (p[3].pyg || p[3].usd) g.appendChild(el('span', 'hint', ' · ' + totalDe(p[3])));
       c.appendChild(g);
       if (!p[2].length){
         c.appendChild(el('div', 'none', 'sin filas cargadas'));
@@ -752,13 +858,15 @@ window.DATOS_RESPALDO = null;
       });
     });
 
-    var ef = el('div', 'ef');
-    ef.appendChild(el('span', null, 'Bancos / Inversiones'));
-    var b = el('b', null, (e.bancos.gs || e.inversiones.gs)
-      ? pct(e.bancos.gs, e.gs) + ' / ' + pct(e.inversiones.gs, e.gs)
-      : '—');
-    ef.appendChild(b);
-    c.appendChild(ef);
+    // el reparto bancos/inversiones en % sólo tiene sentido si hay una moneda común
+    if (!sinTc()){
+      var ef = el('div', 'ef');
+      ef.appendChild(el('span', null, 'Bancos / Inversiones'));
+      ef.appendChild(el('b', null, (e.bancos.gs || e.inversiones.gs)
+        ? pct(e.bancos.gs, e.gs) + ' / ' + pct(e.inversiones.gs, e.gs)
+        : '—'));
+      c.appendChild(ef);
+    }
     return c;
   }
 
@@ -771,15 +879,7 @@ window.DATOS_RESPALDO = null;
     return box;
   }
 
-  function render(){
-    var R = paintHeader();
-    var view = document.getElementById('view');
-    view.innerHTML = '';
-    if (aviso) view.appendChild(avisoEl(aviso));
-    view.appendChild(kpisEl(R));
-    view.appendChild(barrasEl(R));
-    view.appendChild(tablaEl(R));
-
+  function tarjetasEl(R){
     var card = el('div', 'card');
     var h = el('h2', null, 'Dónde está la plata');
     h.appendChild(el('span', 'hint', 'bancos y fondos mutuos cargados en cada empresa'));
@@ -789,7 +889,25 @@ window.DATOS_RESPALDO = null;
     R.ranking.forEach(function(e){ grid.appendChild(empresaEl(e, R)); });
     pad.appendChild(grid);
     card.appendChild(pad);
-    view.appendChild(card);
+    return card;
+  }
+
+  function render(){
+    var R = paintHeader();
+    var view = document.getElementById('view');
+    view.innerHTML = '';
+    if (aviso) view.appendChild(avisoEl(aviso));
+
+    /* =====================================================================
+       ORDEN DE LA PÁGINA
+       Cada línea es una sección. Para mover una de lugar, movés la línea.
+       Para sacarla, le ponés // adelante (o la borrás).
+       ===================================================================== */
+
+    view.appendChild(kpisEl(R));      // los cuatro indicadores de arriba
+    view.appendChild(tablaEl(R));     // tabla    "Detalle por empresa"
+    view.appendChild(barrasEl(R));    // gráfico  "Total por empresa"
+    view.appendChild(tarjetasEl(R));  // tarjetas "Dónde está la plata"
 
     var foot = document.getElementById('foot');
     foot.innerHTML = '';
