@@ -489,7 +489,9 @@ window.DATOS_RESPALDO = null;
     };
   }
 
-  function label(f){ return f.nombre + ' (' + curTag(f.moneda) + ')'; }
+  /* El nombre va solo: la moneda la dice cada monto. Un fondo "en dólares"
+     puede tener una cuenta en guaraníes, así que la etiqueta engañaba. */
+  function label(f){ return f.nombre; }
   function fundOf(id){
     for (var i = 0; i < state.fondos.length; i++) if (state.fondos[i].id === id) return state.fondos[i];
     return state.fondos[0];

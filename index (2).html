@@ -685,10 +685,7 @@ window.DATOS_RESPALDO = null;
       var row = el('div', 'barrow');
 
       var head = el('div', 'barhead');
-      var nm = el('div', 'nm', e.nombre);
-      // sin tipo de cambio cada gráfico ya es de una sola moneda: la etiqueta sobra
-      if (e.moneda) nm.appendChild(el('em', null, curTag(e.moneda)));
-      head.appendChild(nm);
+      head.appendChild(el('div', 'nm', e.nombre));
       var tot = el('div', 'tot', fmt(e.total));
       tot.appendChild(el('span', 'pct', pct(e.total, total)));
       head.appendChild(tot);
@@ -797,9 +794,8 @@ window.DATOS_RESPALDO = null;
     R.ranking.forEach(function(e){
       var tr = document.createElement('tr');
       if (!e.pyg && !e.usd) tr.className = 'nil';
-      var nm = el('td', 'nm', e.nombre);
-      nm.appendChild(el('span', 'pct', ' (' + curTag(e.moneda) + ')'));
-      tr.appendChild(nm);
+      // sin la moneda en el título: cada monto ya dice en qué moneda está
+      tr.appendChild(el('td', 'nm', e.nombre));
       // cada celda en su moneda original, haya o no tipo de cambio
       tr.appendChild(el('td', null, mixto(e.bancos)));
       tr.appendChild(el('td', null, mixto(e.inversiones)));
@@ -826,7 +822,7 @@ window.DATOS_RESPALDO = null;
   function empresaEl(e, R){
     var c = el('div', 'emp');
     var eh = el('div', 'eh');
-    eh.appendChild(el('div', 'en', e.nombre + ' (' + curTag(e.moneda) + ')'));
+    eh.appendChild(el('div', 'en', e.nombre));
     eh.appendChild(el('div', 'ev', totalDe(e)));
     if (sinTc()){
       eh.appendChild(el('div', 'es', (e.pyg && e.usd)
