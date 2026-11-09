@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de Fondos</title>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="theme-color" content="#0A3A2B">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%239CC93F'/%3E%3Ctext x='16' y='22' font-family='Arial,sans-serif' font-size='15' font-weight='bold' text-anchor='middle' fill='%2306251C'%3EPF%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --g-900:#06251C; --g-800:#0A3A2B; --g-700:#0F5340; --g-600:#146B51;
+    --lime:#9CC93F; --tint:#E9F3EC; --tint-2:#F4F9F5;
+    --bg:#F3F6F3; --card:#FFFFFF; --ink:#10211B; --ink-2:#4F6159; --ink-3:#84988E;
+    --line:#DCE6DF; --line-2:#EBF1EC; --radius:14px;
+    --shadow:0 1px 2px rgba(6,37,28,.05), 0 8px 24px rgba(6,37,28,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; font-size:15px; line-height:1.45;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:16px 14px 72px}
+
+  header.top{
+    background:linear-gradient(160deg,var(--g-800) 0%,var(--g-700) 58%,var(--g-600) 100%);
+    border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:18px 18px 16px; margin-bottom:12px; color:#fff;
+    position:relative; overflow:hidden;
+  }
+  header.top::after{
+    content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;
+    border-radius:50%;background:rgba(156,201,63,.14);pointer-events:none;
+  }
+  .brandrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;position:relative}
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .mark{
+    width:30px;height:30px;border-radius:8px;flex:0 0 auto;background:var(--lime);
+    display:grid;place-items:center;font-weight:800;font-size:14px;color:var(--g-900);letter-spacing:-.02em;
+  }
+  h1{font-size:17px;font-weight:650;margin:0;letter-spacing:-.01em}
+  .stamp{font-size:11.5px;color:rgba(255,255,255,.72);font-variant-numeric:tabular-nums}
+  .grandrow{display:flex;align-items:flex-end;gap:22px;flex-wrap:wrap;margin-top:16px;position:relative}
+  .grand .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.66);font-weight:650}
+  .grand .val{font-size:27px;font-weight:750;letter-spacing:-.025em;font-variant-numeric:tabular-nums;line-height:1.15;color:var(--lime)}
+  .grand.sm .val{font-size:17px;font-weight:600;color:rgba(255,255,255,.9)}
+
+  .fx{
+    margin-top:16px;position:relative;background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.16);border-radius:11px;padding:10px 12px;
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;color:rgba(255,255,255,.9);
+  }
+  .fx .fxmain{display:flex;align-items:baseline;gap:7px;font-variant-numeric:tabular-nums}
+  .fx .fxmain b{font-size:15px;font-weight:700;color:#fff}
+  .fx .src{font-size:11px;color:rgba(255,255,255,.62)}
+  .fx .spacer{flex:1 1 10px}
+  .pill{
+    display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:650;
+    padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.16);color:rgba(255,255,255,.9);
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+  nav.tabs{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 10px;margin:0 -2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  nav.tabs::-webkit-scrollbar{display:none}
+  nav.tabs button{
+    flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink-2);
+    font:inherit;font-size:13.5px;font-weight:550;padding:8px 15px;border-radius:999px;cursor:pointer;
+    white-space:nowrap;transition:background .12s,color .12s,border-color .12s;
+  }
+  nav.tabs button:hover{color:var(--g-700);border-color:#C6D8CB}
+  nav.tabs button[aria-current="true"]{background:var(--g-700);border-color:var(--g-700);color:#fff}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+  .card > h2{
+    font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--g-700);
+    margin:0;padding:13px 16px 11px;border-bottom:1px solid var(--line-2);background:var(--tint-2);
+  }
+  .rows{padding:4px 0}
+  .row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line-2)}
+  .row:last-child{border-bottom:none}
+  .row .nm{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .nm.empty{color:var(--ink-3);font-weight:400;font-style:italic}
+  .row .mny{text-align:right;font-variant-numeric:tabular-nums;font-weight:650;white-space:nowrap}
+
+  .subtot{
+    display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:11px 16px;
+    background:var(--tint-2);border-top:1px solid var(--line-2);font-size:13px;color:var(--ink-2);font-weight:600;
+  }
+  .subtot .v{color:var(--g-700);font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+  .subtot .v span{display:block}
+  .subtot .v span + span{color:var(--ink-2);font-size:12.5px;font-weight:600;margin-top:2px}
+
+  .fundtot{
+    background:linear-gradient(135deg,var(--g-800),var(--g-600));color:#fff;border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:15px 17px;display:flex;justify-content:space-between;align-items:center;
+    gap:12px;flex-wrap:wrap;margin-bottom:12px;border-left:4px solid var(--lime);
+  }
+  .fundtot .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;opacity:.7;font-weight:650}
+  .fundtot .big{font-size:22px;font-weight:750;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .fundtot .split{font-size:12px;opacity:.8;font-variant-numeric:tabular-nums;text-align:right}
+
+  table.sum{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.sum th,table.sum td{padding:11px 16px;text-align:right;border-bottom:1px solid var(--line-2);white-space:nowrap}
+  table.sum th{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--g-700);font-weight:700;background:var(--tint)}
+  table.sum th:first-child,table.sum td:first-child{text-align:left;white-space:normal}
+  table.sum td{font-variant-numeric:tabular-nums}
+  table.sum td.nm{font-weight:600}
+  table.sum tbody tr:hover td{background:var(--tint-2)}
+  table.sum tr.tot td{border-bottom:none;border-top:2px solid var(--g-600);font-weight:750;background:var(--g-800);color:#fff}
+  table.sum tr.tot:hover td{background:var(--g-800)}
+  table.sum tr.tot td:last-child{color:var(--lime)}
+  .nilrow td{color:var(--ink-3)}
+
+  .note{font-size:12px;color:var(--ink-3);padding:0 4px;margin:-4px 0 14px}
+  .err{background:#FFF8E5;border:1px solid #F0E0B4;color:#7A5A12;border-radius:var(--radius);padding:12px 14px;font-size:13px;margin-bottom:12px;line-height:1.5}
+  .err b{display:block;margin-bottom:3px}
+  .err code{background:rgba(122,90,18,.1);padding:1px 5px;border-radius:4px;font-size:12px;word-break:break-all}
+  footer.src{font-size:11.5px;color:var(--ink-3);text-align:center;padding:8px 4px 0;line-height:1.7}
+  footer.src a{color:var(--g-600);font-weight:600}
+  #boot{padding:48px 16px;text-align:center;color:var(--ink-3);font-size:14px}
+
+  @media (max-width:560px){
+    .wrap{padding:12px 11px 72px}
+    header.top{padding:16px 14px 14px}
+    .grandrow{gap:16px}
+    .row{padding:9px 12px}
+    .card > h2{padding:12px 12px 10px}
+    .subtot{padding:10px 12px}
+    table.sum th,table.sum td{padding:10px 10px;font-size:13px}
+    .grand .val{font-size:23px}
+    .fx{font-size:12px}
+  }
+  @media print{
+    body{background:#fff}
+    nav.tabs{display:none}
+    .card,header.top,.fundtot{box-shadow:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brandrow">
+      <div class="brand">
+        <div class="mark">PF</div>
+        <h1>Panel de Fondos</h1>
+      </div>
+      <span class="stamp" id="stamp"></span>
+    </div>
+    <div class="grandrow">
+      <div class="grand">
+        <div class="lbl" id="lblGs">Total consolidado · Gs.</div>
+        <div class="val" id="grandVal">—</div>
+      </div>
+      <div class="grand sm">
+        <div class="lbl" id="lblUsd">Total consolidado · USD</div>
+        <div class="val" id="grandUsd">—</div>
+      </div>
+    </div>
+    <div class="fx">
+      <div class="fxmain" id="fxMain"><span>US$ 1 =</span><b id="fxRate">—</b><span>Gs.</span></div>
+      <span class="src" id="fxSrc"></span>
+      <span class="spacer"></span>
+      <span class="pill"><span class="dot"></span><span>Sólo lectura</span></span>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs"></nav>
+  <main id="view"><div id="boot">Cargando datos…</div></main>
+  <footer class="src" id="origen"></footer>
+</div>
+
+<script>
+/* Datos de respaldo opcionales: se usan sólo si no se puede leer ni la planilla
+   ni datos.json (por ejemplo al abrir el archivo con doble clic, sin servidor). */
+window.DATOS_RESPALDO = null;
+</script>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =======================================================================
+     ORIGEN DE LOS DATOS  —  es lo único que se edita en este archivo.
+
+     Pegá acá, entre las comillas, la URL que te da Google Sheets en
+     Archivo → Compartir → Publicar en la web
+       → primer desplegable: la hoja DATOS   (NO "Todo el documento")
+       → segundo desplegable: Valores separados por comas (.csv)
+       → Publicar, y copiar la URL.
+
+     Tiene que verse así, con gid y single=true:
+     https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?gid=123456789&single=true&output=csv
+
+     Si la URL no lleva gid, Google devuelve la PRIMERA hoja del documento
+     ("Consolidado"): la página se da cuenta, busca sola la hoja DATOS y
+     muestra un aviso hasta que la corrijas.
+
+     Dejala vacía ("") si querés que la página use sólo datos.json.
+     ======================================================================= */
+
+  var ORIGEN_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTcpCTzLKNkGf9YikuvFh44yyf0bV0N0xqYuy6hXKAuW8Gv6mM6q1cueIairVRxTg/pub?output=csv";
+
+  /* Nombre de la pestaña de la planilla que tiene los datos.
+     No cambiar salvo que le hayas puesto otro nombre en Google Sheets. */
+  var HOJA = "DATOS";
+
+  /* Link al dashboard con el resumen por empresa. Si no lo vas a subir,
+     dejalo vacío ("") y el enlace del pie desaparece. */
+  var LINK_RESUMEN = "index.html";
+
+  ORIGEN_CSV = String(ORIGEN_CSV).trim();
+
+  var SLOTS = 3;
+  var state = null;
+  var current = "resumen";
+  var aviso = "";
+  var origen = "";
+
+  var fmtPyg = new Intl.NumberFormat('es-PY', { maximumFractionDigits:0 });
+  // mismo criterio que los guaraníes: punto para los miles, coma para los decimales
+  var fmtUsd = new Intl.NumberFormat('es-PY', { minimumFractionDigits:2, maximumFractionDigits:2 });
+
+  function gs(n){ return 'Gs. ' + fmtPyg.format(Math.round(Number(n) || 0)); }
+  function usd(n){ return 'US$ ' + fmtUsd.format(Number(n) || 0); }
+  function money(n, cur){ return cur === 'USD' ? usd(n) : gs(n); }
+  function curTag(c){ return c === 'USD' ? 'USD' : 'Gs.'; }
+  function rate(){ return Number(state && state.fx && state.fx.rate) || 0; }
+
+  /* Un tipo de cambio real de guaraníes por dólar está en los miles. Si la
+     planilla trae 0, 1, o cualquier número chico, es que no se está
+     convirtiendo nada: la página muestra cada monto en su moneda original
+     en vez de sumar dólares con guaraníes a una cotización que no existe. */
+  var TC_MINIMO = 100;
+  function sinTc(){ return !(rate() >= TC_MINIMO); }
+  function mixto(t){
+    if (!t.pyg && !t.usd) return '—';
+    if (!t.usd) return gs(t.pyg);
+    if (!t.pyg) return usd(t.usd);
+    return gs(t.pyg) + '  +  ' + usd(t.usd);
+  }
+  /* El total de un fondo se muestra siempre en su moneda: un fondo en
+     dólares no se convierte a guaraníes sólo porque haya tipo de cambio. */
+  function totalDe(t){ return mixto(t); }
+
+  function el(tag, cls, text){
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function fmtDate(iso, withTime){
+    var d = new Date(iso);
+    if (!iso || isNaN(d)) return '';
+    var o = { timeZone:'America/Asuncion', day:'2-digit', month:'2-digit', year:'numeric' };
+    if (withTime){ o.hour = '2-digit'; o.minute = '2-digit'; o.hour12 = false; }
+    try{ return d.toLocaleString('es-PY', o); }catch(e){ return d.toLocaleDateString(); }
+  }
+
+  /* ---------- normalización defensiva del JSON ---------- */
+  function normRows(rows, def, prefix){
+    var out = [];
+    // SLOTS es el mínimo: si la planilla trae más filas, se muestran todas
+    var n = Math.max(SLOTS, (Array.isArray(rows) ? rows.length : 0));
+    for (var k = 0; k < n; k++){
+      var r = (Array.isArray(rows) && rows[k]) || {};
+      var c = r.currency === 'USD' ? 'USD' : (r.currency === 'PYG' ? 'PYG' : def);
+      out.push({
+        label: typeof r.label === 'string' ? r.label : '',
+        amount: Number(r.amount) || 0,
+        currency: c,
+        ph: prefix + ' ' + (k + 1)
+      });
+    }
+    return out;
+  }
+  function normalize(raw){
+    if (!raw || typeof raw !== 'object') throw new Error('datos vacíos');
+    var fondos = Array.isArray(raw.fondos) ? raw.fondos : [];
+    if (!fondos.length) throw new Error('sin fondos');
+    return {
+      actualizado: typeof raw.actualizado === 'string' ? raw.actualizado : '',
+      fx: {
+        rate: Number(raw.fx && raw.fx.rate) || 0,
+        source: (raw.fx && typeof raw.fx.source === 'string') ? raw.fx.source : '',
+        asOf: (raw.fx && typeof raw.fx.asOf === 'string') ? raw.fx.asOf : ''
+      },
+      fondos: fondos.map(function(f, i){
+        var cur = f.moneda === 'USD' ? 'USD' : 'PYG';
+        return {
+          id: typeof f.id === 'string' && f.id ? f.id : ('fondo-' + (i + 1)),
+          nombre: typeof f.nombre === 'string' ? f.nombre : ('Fondo ' + (i + 1)),
+          moneda: cur,
+          bancos: normRows(f.bancos, cur, 'Banco'),
+          inversiones: normRows(f.inversiones, cur, 'Fondo mutuo')
+        };
+      })
+    };
+  }
+
+  /* ---------- lectura de la planilla (CSV) ---------- */
+  function parseCSV(text){
+    var rows = [], row = [], cur = '', q = false, i = 0;
+    text = String(text).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    while (i < text.length){
+      var ch = text.charAt(i);
+      if (q){
+        if (ch === '"'){
+          if (text.charAt(i + 1) === '"'){ cur += '"'; i += 2; continue; }
+          q = false; i++; continue;
+        }
+        cur += ch; i++; continue;
+      }
+      if (ch === '"'){ q = true; i++; continue; }
+      if (ch === ','){ row.push(cur); cur = ''; i++; continue; }
+      if (ch === '\n'){ row.push(cur); rows.push(row); row = []; cur = ''; i++; continue; }
+      cur += ch; i++;
+    }
+    if (cur !== '' || row.length){ row.push(cur); rows.push(row); }
+    return rows;
+  }
+
+  function parseMonto(str, cur){
+    if (str == null) return 0;
+    var s = String(str).trim().replace(/[^0-9.,-]/g, '');
+    if (!s) return 0;
+    var neg = s.charAt(0) === '-';
+    s = s.replace(/-/g, '');
+    var val;
+    if (cur === 'USD'){
+      var cut = Math.max(s.lastIndexOf('.'), s.lastIndexOf(','));
+      var tail = cut > -1 ? s.length - cut - 1 : -1;
+      if (cut > -1 && tail > 0 && tail <= 2){
+        val = Number(s.slice(0, cut).replace(/[^0-9]/g, '') + '.' + s.slice(cut + 1).replace(/[^0-9]/g, ''));
+      } else {
+        val = Number(s.replace(/[^0-9]/g, ''));
+      }
+    } else {
+      val = Number(s.replace(/[^0-9]/g, ''));
+    }
+    if (!isFinite(val) || val === 0) return 0;
+    return neg ? -val : val;
+  }
+
+  function slug(s){
+    var t = String(s).toLowerCase();
+    // saca los acentos: Orquídeas -> orquideas (así el id es igual que en datos.json)
+    if (t.normalize) t = t.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return t.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+  function parseFecha(s){
+    s = (s || '').trim();
+    if (!s) return null;
+    var m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3], 12, 0, 0);
+    m = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/.exec(s);
+    if (m) return new Date(+m[3], +m[2] - 1, +m[1], 12, 0, 0);
+    var d = new Date(s);
+    return isNaN(d) ? null : d;
+  }
+  function limpiarNombre(s){
+    return String(s).replace(/\s*\((USD|US\$|Gs\.?|PYG|G\$)\)\s*$/i, '').trim();
+  }
+
+  function fromCsv(text){
+    var rows = parseCSV(text);
+    var cfg = {}, head = -1, cols = null;
+    // La fila de encabezados es la que tiene fondo + seccion + monto a la vez.
+    // (Ojo: la hoja Consolidado también tiene una fila que empieza con "Fondo",
+    //  por eso no alcanza con mirar la primera celda.)
+    for (var i = 0; i < rows.length; i++){
+      var celdas = rows[i].map(function(h){ return (h || '').trim().toLowerCase(); });
+      if (celdas.indexOf('fondo') >= 0 && celdas.indexOf('seccion') >= 0 && celdas.indexOf('monto') >= 0){
+        head = i; cols = celdas; break;
+      }
+      if (celdas[0]) cfg[celdas[0]] = (rows[i][1] || '').trim();
+    }
+    if (head < 0){
+      var e = new Error('la hoja que devolvió la URL no tiene las columnas fondo/seccion/monto');
+      e.codigo = 'hoja-incorrecta';
+      e.primera = ((rows[0] && rows[0][0]) || '').trim().slice(0, 60);
+      throw e;
+    }
+
+    function idx(name){ return cols.indexOf(name); }
+    var iF = idx('fondo'), iMf = idx('moneda_fondo'), iS = idx('seccion'),
+        iN = idx('nombre'), iM = idx('moneda'), iA = idx('monto');
+
+    var orden = [], mapa = {};
+    for (var r = head + 1; r < rows.length; r++){
+      var fila = rows[r];
+      var nombreFondo = (fila[iF] || '').trim();
+      if (!nombreFondo) continue;
+      // sólo filas de datos de verdad: cualquier nota al pie de la planilla se ignora
+      var sec = (fila[iS] || '').trim().toLowerCase();
+      var esBanco = sec.indexOf('banco') === 0;
+      var esInv = sec.indexOf('inv') === 0;
+      if (!esBanco && !esInv) continue;
+      var monedaFondo = ((iMf >= 0 ? fila[iMf] : '') || '').trim().toUpperCase();
+      monedaFondo = (monedaFondo.indexOf('US') === 0) ? 'USD' : 'PYG';
+      var limpio = limpiarNombre(nombreFondo);
+      var id = slug(limpio) || ('fondo-' + orden.length);
+      if (!mapa[id]){
+        mapa[id] = { id:id, nombre:limpio, moneda:monedaFondo, bancos:[], inversiones:[] };
+        orden.push(id);
+      }
+      var monedaFila = ((iM >= 0 ? fila[iM] : '') || '').trim().toUpperCase();
+      var cur = monedaFila ? (monedaFila.indexOf('US') === 0 ? 'USD' : 'PYG') : monedaFondo;
+      var destino = esInv ? mapa[id].inversiones : mapa[id].bancos;
+      destino.push({
+        label: ((iN >= 0 ? fila[iN] : '') || '').trim(),
+        amount: parseMonto(fila[iA], cur),
+        currency: cur
+      });
+    }
+    if (!orden.length) throw new Error('la planilla no tiene filas de datos');
+
+    // Una fecha sin hora se toma como mediodía local, para que no se corra de día
+    // al convertirla a la zona de Asunción.
+    var d = parseFecha(cfg['actualizado']) || new Date();
+
+    return {
+      actualizado: d.toISOString(),
+      fx: {
+        rate: parseMonto(cfg['tc'], 'PYG'),
+        source: cfg['fuente'] || 'planilla de Google',
+        asOf: d.toISOString()
+      },
+      fondos: orden.map(function(id){ return mapa[id]; })
+    };
+  }
+
+
+  /* ---------------------------------------------------------------------
+     Lectura de la hoja "Consolidado" (la primera del documento).
+     Trae un total por empresa YA CONVERTIDO a guaraníes con el tipo de
+     cambio de la celda B4. Se usa sólo si no se pudo llegar a la hoja
+     DATOS: así la página muestra números correctos igual, aunque sin el
+     detalle banco por banco.
+     --------------------------------------------------------------------- */
+  function fromConsolidado(text){
+    var rows = parseCSV(text);
+    var head = -1, tc = 0;
+    for (var i = 0; i < rows.length; i++){
+      var c0 = (rows[i][0] || '').trim().toLowerCase();
+      if (c0.indexOf('tipo de cambio') === 0) tc = parseMonto(rows[i][1], 'PYG');
+      if (c0 === 'fondo'){ head = i; break; }
+    }
+    if (head < 0) throw new Error('no reconozco la hoja que devolvió la URL');
+
+    var fondos = [];
+    for (var r = head + 1; r < rows.length; r++){
+      var nombre = (rows[r][0] || '').trim();
+      if (!nombre) continue;
+      // la fila TOTAL y las instrucciones de abajo cierran la tabla
+      if (/^total/i.test(nombre) || /^\d+\./.test(nombre)) break;
+      if (nombre.toLowerCase().indexOf('como usar') === 0) break;
+      var limpio = limpiarNombre(nombre);
+      var cur = /\(\s*(USD|US\$)\s*\)/i.test(nombre) ? 'USD' : 'PYG';
+      var mb = parseMonto(rows[r][1], 'PYG');
+      var mi = parseMonto(rows[r][2], 'PYG');
+      /* Esta hoja guarda todo convertido a guaraníes. Si el fondo es en dólares,
+         se vuelve al monto original dividiendo por el mismo tipo de cambio que
+         usó la planilla, así no se muestra un fondo en US$ etiquetado en Gs. */
+      var monedaFila = 'PYG';
+      if (cur === 'USD' && tc > 0){
+        mb = mb / tc; mi = mi / tc; monedaFila = 'USD';
+      }
+      fondos.push({
+        id: slug(limpio) || ('fondo-' + fondos.length),
+        nombre: limpio,
+        moneda: cur,
+        bancos: [{ label:'Total en bancos', amount: mb, currency: monedaFila }],
+        inversiones: [{ label:'Total en inversiones', amount: mi, currency: monedaFila }]
+      });
+    }
+    if (!fondos.length) throw new Error('la hoja Consolidado no tiene filas de fondos');
+
+    var d = new Date();
+    return {
+      actualizado: d.toISOString(),
+      fx: { rate: tc, source: 'hoja Consolidado', asOf: d.toISOString() },
+      fondos: fondos
+    };
+  }
+
+  /* El nombre va solo: la moneda la dice cada monto. Un fondo "en dólares"
+     puede tener una cuenta en guaraníes, así que la etiqueta engañaba. */
+  function label(f){ return f.nombre; }
+  function fundOf(id){
+    for (var i = 0; i < state.fondos.length; i++) if (state.fondos[i].id === id) return state.fondos[i];
+    return state.fondos[0];
+  }
+
+  /* ---------- cálculos ---------- */
+  function secTotals(rows){
+    var t = { pyg:0, usd:0 };
+    rows.forEach(function(r){
+      if (r.currency === 'USD') t.usd += r.amount; else t.pyg += r.amount;
+    });
+    return t;
+  }
+  function fundTotals(f){
+    var b = secTotals(f.bancos), i = secTotals(f.inversiones);
+    return { pyg:b.pyg + i.pyg, usd:b.usd + i.usd };
+  }
+  function consolidated(){
+    var t = { pyg:0, usd:0 };
+    state.fondos.forEach(function(f){
+      var ft = fundTotals(f);
+      t.pyg += ft.pyg; t.usd += ft.usd;
+    });
+    t.gs = t.pyg + t.usd * rate();
+    return t;
+  }
+
+  /* ---------- render ---------- */
+  function paintHeader(){
+    var c = consolidated(), r = rate();
+    var d = fmtDate(state.fx.asOf, false);
+
+    if (sinTc()){
+      document.getElementById('lblGs').textContent = 'Total en guaraníes';
+      document.getElementById('lblUsd').textContent = 'Total en dólares';
+      document.getElementById('grandVal').textContent = gs(c.pyg);
+      document.getElementById('grandUsd').textContent = usd(c.usd);
+      document.getElementById('fxMain').style.display = 'none';
+      document.getElementById('fxSrc').textContent = 'Cada monto en su moneda original · sin conversión';
+    } else {
+      document.getElementById('lblGs').textContent = 'Total consolidado · Gs.';
+      document.getElementById('lblUsd').textContent = 'Total consolidado · USD';
+      document.getElementById('grandVal').textContent = gs(c.gs);
+      document.getElementById('grandUsd').textContent = usd(c.gs / r);
+      document.getElementById('fxMain').style.display = '';
+      document.getElementById('fxRate').textContent = fmtPyg.format(Math.round(r));
+      document.getElementById('fxSrc').textContent =
+        (state.fx.source || 'cotización diaria') + (d ? ' · ' + d : '');
+    }
+
+    var s = fmtDate(state.actualizado, true);
+    document.getElementById('stamp').textContent = s ? 'Actualizado ' + s + ' hs' : '';
+  }
+
+  function paintTabs(){
+    var nav = document.getElementById('tabs');
+    nav.innerHTML = '';
+    var items = [{ id:'resumen', txt:'Resumen' }].concat(state.fondos.map(function(f){
+      return { id:f.id, txt:label(f) };
+    }));
+    items.forEach(function(it){
+      var b = el('button', null, it.txt);
+      b.setAttribute('aria-current', it.id === current ? 'true' : 'false');
+      b.onclick = function(){ go(it.id); };
+      nav.appendChild(b);
+    });
+  }
+  function go(id){
+    current = id;
+    try{ location.hash = '#' + id; }catch(e){}
+    render();
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  function subtotEl(st){
+    var sub = el('div', 'subtot');
+    sub.appendChild(el('div', null, 'Subtotal'));
+    var v = el('div', 'v');
+    if (!st.pyg && !st.usd){
+      v.appendChild(el('span', null, '—'));
+    } else {
+      if (st.pyg) v.appendChild(el('span', null, gs(st.pyg)));
+      if (st.usd) v.appendChild(el('span', null, usd(st.usd)));
+    }
+    sub.appendChild(v);
+    return sub;
+  }
+  function rowsCard(title, rows){
+    var card = el('div', 'card');
+    card.appendChild(el('h2', null, title));
+    var body = el('div', 'rows');
+    rows.forEach(function(r){
+      var vacia = !r.label && !r.amount;
+      var row = el('div', 'row');
+      row.appendChild(el('div', 'nm' + (r.label ? '' : ' empty'), r.label || r.ph));
+      row.appendChild(el('div', 'mny', vacia ? '—' : money(r.amount, r.currency)));
+      body.appendChild(row);
+    });
+    card.appendChild(body);
+    card.appendChild(subtotEl(secTotals(rows)));
+    return card;
+  }
+
+  function fundView(id){
+    var f = fundOf(id), t = fundTotals(f);
+    var frag = document.createDocumentFragment();
+
+    var head = el('div', 'fundtot');
+    var left = el('div');
+    left.appendChild(el('div', 'lbl', label(f) + ' · total del fondo'));
+    left.appendChild(el('div', 'big', totalDe(t)));
+    head.appendChild(left);
+    var right = el('div', 'split');
+    if (!sinTc() && t.usd){
+      right.appendChild(el('div', null, '≈ ' + gs(t.pyg + t.usd * rate())));
+      right.appendChild(el('div', null, 'al TC ' + fmtPyg.format(Math.round(rate()))));
+    } else if (!t.pyg && !t.usd){
+      right.appendChild(el('div', null, '—'));
+    }
+    head.appendChild(right);
+    frag.appendChild(head);
+
+    frag.appendChild(rowsCard('Bancos · saldos', f.bancos));
+    frag.appendChild(rowsCard('Inversiones · fondos mutuos', f.inversiones));
+    return frag;
+  }
+
+  function cellMix(t){
+    if (!t.pyg && !t.usd) return '—';
+    if (!t.usd) return gs(t.pyg);
+    return mixto(t);
+  }
+
+  function summaryView(){
+    var frag = document.createDocumentFragment();
+    var card = el('div', 'card');
+    card.appendChild(el('h2', null, 'Consolidado por fondo'));
+
+    var table = el('table', 'sum');
+    var thead = document.createElement('thead');
+    var htr = document.createElement('tr');
+    ['Fondo', 'Bancos', 'Inversiones', 'Total'].forEach(function(h){ htr.appendChild(el('th', null, h)); });
+    thead.appendChild(htr); table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    var sum = { pyg:0, usd:0, gs:0 };
+    state.fondos.forEach(function(f){
+      var b = secTotals(f.bancos), i = secTotals(f.inversiones), t = fundTotals(f);
+      var g = t.pyg + t.usd * rate();
+      sum.pyg += t.pyg; sum.usd += t.usd; sum.gs += g;
+
+      var tr = document.createElement('tr');
+      if (!t.pyg && !t.usd) tr.className = 'nilrow';
+      tr.appendChild(el('td', 'nm', label(f)));
+      tr.appendChild(el('td', null, cellMix(b)));
+      tr.appendChild(el('td', null, cellMix(i)));
+      tr.appendChild(el('td', null, totalDe(t)));
+      tr.style.cursor = 'pointer';
+      tr.onclick = function(){ go(f.id); };
+      tbody.appendChild(tr);
+    });
+
+    var tot = document.createElement('tr');
+    tot.className = 'tot';
+    tot.appendChild(el('td', null, 'TOTAL'));
+    tot.appendChild(el('td', null, ''));
+    tot.appendChild(el('td', null, ''));
+    tot.appendChild(el('td', null, totalDe(sum)));
+    tbody.appendChild(tot);
+    table.appendChild(tbody);
+    card.appendChild(table);
+    frag.appendChild(card);
+
+    var det = el('div', 'card');
+    det.appendChild(el('h2', null, 'Totales por moneda'));
+    var rows = el('div', 'rows');
+    var filas = [['Saldos y fondos en guaraníes', gs(sum.pyg)],
+                 ['Saldos y fondos en dólares', usd(sum.usd)]];
+    if (!sinTc()){
+      filas.push(['Dólares convertidos a Gs. (TC ' + fmtPyg.format(Math.round(rate())) + ')',
+                  gs(sum.usd * rate())]);
+    }
+    filas.forEach(function(p){
+      var r = el('div', 'row');
+      r.appendChild(el('div', 'nm', p[0]));
+      r.appendChild(el('div', 'mny', p[1]));
+      rows.appendChild(r);
+    });
+    det.appendChild(rows);
+    var sub = el('div', 'subtot');
+    sub.appendChild(el('div', null, sinTc() ? 'Total, sin convertir' : 'Total consolidado'));
+    var v = el('div', 'v');
+    if (sinTc()){
+      if (sum.pyg) v.appendChild(el('span', null, gs(sum.pyg)));
+      if (sum.usd) v.appendChild(el('span', null, usd(sum.usd)));
+      if (!sum.pyg && !sum.usd) v.appendChild(el('span', null, '—'));
+    } else {
+      v.appendChild(el('span', null, gs(sum.gs)));
+    }
+    sub.appendChild(v);
+    det.appendChild(sub);
+    frag.appendChild(det);
+
+    frag.appendChild(el('div', 'note', 'Tocá cualquier fila o pestaña para ver el detalle de ese fondo.'));
+    return frag;
+  }
+
+  function avisoEl(texto){
+    var box = el('div', 'err');
+    box.appendChild(el('b', null, 'Atención'));
+    // el texto puede traer <code>…</code>; se arma a mano para no usar innerHTML con datos externos
+    texto.split('|CODE|').forEach(function(parte, i){
+      box.appendChild(i % 2 ? el('code', null, parte) : document.createTextNode(parte));
+    });
+    return box;
+  }
+
+  function render(){
+    paintTabs();
+    paintHeader();
+    var view = document.getElementById('view');
+    view.innerHTML = '';
+    if (aviso) view.appendChild(avisoEl(aviso));
+    var ids = state.fondos.map(function(f){ return f.id; });
+    view.appendChild(current === 'resumen' || ids.indexOf(current) < 0 ? summaryView() : fundView(current));
+    var pie = document.getElementById('origen');
+    pie.innerHTML = '';
+    if (origen) pie.appendChild(el('div', null, 'Origen de los datos: ' + origen));
+    if (LINK_RESUMEN){
+      var a = document.createElement('a');
+      a.href = LINK_RESUMEN;
+      a.textContent = 'Ver el resumen por empresa →';
+      var d = el('div');
+      d.appendChild(a);
+      pie.appendChild(d);
+    }
+  }
+
+  function fail(msg){
+    var view = document.getElementById('view');
+    view.innerHTML = '';
+    view.appendChild(avisoEl(msg));
+    document.getElementById('origen').textContent = '';
+  }
+
+  /* ---------- carga ---------- */
+  function start(raw, nota, deDonde){
+    try{
+      state = normalize(raw);
+    }catch(e){
+      fail('No se pudieron leer los datos del panel (' + e.message + '). Revisá el archivo datos.json.');
+      return;
+    }
+    aviso = nota || '';
+    origen = deDonde || '';
+    var h = (location.hash || '').replace('#', '');
+    var ids = state.fondos.map(function(f){ return f.id; });
+    if (h === 'resumen' || ids.indexOf(h) >= 0) current = h;
+    window.addEventListener('hashchange', function(){
+      var k = (location.hash || '').replace('#', '');
+      if (k && k !== current && (k === 'resumen' || ids.indexOf(k) >= 0)){ current = k; render(); }
+    });
+    render();
+  }
+
+  function conCacheBuster(url){
+    return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'v=' + Date.now();
+  }
+
+  function cargarJson(nota){
+    fetch(conCacheBuster('datos.json'), { cache:'no-store' })
+      .then(function(res){
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(raw){ start(raw, nota, 'archivo datos.json'); })
+      .catch(function(){
+        if (window.DATOS_RESPALDO){
+          start(window.DATOS_RESPALDO, 'Mostrando los datos de respaldo incluidos en la página.', 'respaldo en la página');
+        } else if (nota){
+          fail(nota + ' Tampoco se pudo leer datos.json.');
+        } else {
+          fail('No se pudo cargar datos.json. Si abriste el archivo con doble clic, el navegador bloquea la lectura: la página tiene que estar publicada en un servidor.');
+        }
+      });
+  }
+
+  function traerTexto(url){
+    return fetch(conCacheBuster(url), { cache:'no-store' }).then(function(res){
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.text();
+    });
+  }
+
+  function textoNoEsCsv(txt){ return /^\s*</.test(txt); }
+
+  /* --- cómo se encuentra la hoja DATOS ---------------------------------
+     Si la URL publicada no trae gid, Google devuelve la PRIMERA hoja del
+     documento ("Consolidado"). La página entonces se fija en la versión
+     HTML del documento publicado, saca de ahí el gid de la hoja DATOS y
+     reintenta con ese gid. El gid encontrado queda guardado en el navegador,
+     así la próxima visita va derecho a la hoja correcta.
+     --------------------------------------------------------------------- */
+  var CLAVE_GID = 'panelFondos.gid.' + HOJA;
+
+  function leerGid(){ try{ return localStorage.getItem(CLAVE_GID); }catch(e){ return null; } }
+  function guardarGid(g){ try{ localStorage.setItem(CLAVE_GID, g); }catch(e){} }
+  function borrarGid(){ try{ localStorage.removeItem(CLAVE_GID); }catch(e){} }
+
+  function baseDelDoc(){
+    var base = ORIGEN_CSV.split('/pub')[0];
+    return (base && base !== ORIGEN_CSV) ? base : '';
+  }
+  function csvConGid(gid){
+    var base = baseDelDoc();
+    return base ? (base + '/pub?gid=' + gid + '&single=true&output=csv') : '';
+  }
+  function gidEnHtml(html, nombreHoja){
+    var re = /gid=(\d+)[^>]*>([^<]{1,80})</g, m, objetivo = nombreHoja.trim().toLowerCase();
+    while ((m = re.exec(html))){
+      if (m[2].trim().toLowerCase() === objetivo) return m[1];
+    }
+    return null;
+  }
+  function buscarGidDeHoja(nombreHoja){
+    var base = baseDelDoc();
+    if (!base) return Promise.reject(new Error('no reconozco la forma de la URL publicada'));
+    // se prueban las dos formas en las que Google sirve el documento completo
+    var candidatas = [base + '/pubhtml', base + '/pub?output=html'];
+    var cadena = Promise.reject(new Error('inicio'));
+    candidatas.forEach(function(u){
+      cadena = cadena.catch(function(){
+        return traerTexto(u).then(function(html){
+          var gid = gidEnHtml(html, nombreHoja);
+          if (!gid) throw new Error('no encontré la hoja ' + nombreHoja + ' en el documento publicado');
+          return gid;
+        });
+      });
+    });
+    return cadena.then(function(gid){
+      guardarGid(gid);
+      return csvConGid(gid);
+    });
+  }
+
+  function intentarCsv(url){
+    return traerTexto(url).then(function(txt){
+      if (textoNoEsCsv(txt)) throw new Error('la URL devolvió una página HTML, no un CSV');
+      try{
+        return fromCsv(txt);
+      }catch(e){
+        e.texto = txt;   // se guarda por si hay que leer la hoja igual
+        throw e;
+      }
+    });
+  }
+
+  function cargarPlanilla(){
+    var hojaDevuelta = '', textoPrimero = '';
+    var gidGuardado = leerGid();
+    var primero;
+
+    if (gidGuardado && csvConGid(gidGuardado)){
+      // visitas siguientes: derecho a la hoja correcta
+      primero = intentarCsv(csvConGid(gidGuardado)).catch(function(){
+        borrarGid();
+        return intentarCsv(ORIGEN_CSV);
+      });
+    } else {
+      primero = intentarCsv(ORIGEN_CSV);
+    }
+
+    primero
+      .catch(function(e1){
+        if (e1 && e1.codigo === 'hoja-incorrecta'){
+          hojaDevuelta = e1.primera || '';
+          textoPrimero = e1.texto || '';
+        }
+        // plan B: buscar el gid de la hoja DATOS dentro del documento publicado
+        return buscarGidDeHoja(HOJA).then(intentarCsv).catch(function(e2){
+          // plan C: leer la hoja que sí devolvió la URL (la Consolidado)
+          if (!textoPrimero) throw e2;
+          var datos = fromConsolidado(textoPrimero);
+          datos.__origen = 'planilla de Google · hoja Consolidado';
+          datos.__aviso =
+            'La URL publicada devuelve la hoja «' + (hojaDevuelta || 'Consolidado') + '», no la hoja ' + HOJA + '. ' +
+            'La página está mostrando los totales de esa hoja, que sólo trae un total de bancos y uno de inversiones ' +
+            'por empresa: no está el detalle banco por banco. Los fondos en dólares se reconstruyeron con el tipo de ' +
+            'cambio de la celda B4, así que pueden diferir por redondeo del saldo real. ' +
+            'Para verlo completo, en Google Sheets: Archivo → Compartir → Publicar en la web → elegí la hoja ' + HOJA +
+            ' → CSV, y pegá esa URL en la línea |CODE|ORIGEN_CSV|CODE| de index.html y detalle.html.';
+          return datos;
+        });
+      })
+      .then(function(datos){
+        start(datos, datos.__aviso || '', datos.__origen || ('planilla de Google · hoja ' + HOJA));
+      })
+      .catch(function(e){
+        var detalle = (e && e.message) ? e.message : 'error desconocido';
+        cargarJson('No se pudo leer la planilla de Google (' + detalle + ').' +
+                   ' Mientras tanto se muestran los últimos números guardados en datos.json.' +
+                   ' Subí |CODE|diagnostico.html|CODE| junto a esta página y abrilo: ahí dice exactamente qué está fallando.');
+      });
+  }
+
+  if (ORIGEN_CSV){
+    cargarPlanilla();
+  } else {
+    cargarJson();
+  }
+})();
+</script>
+</body>
+</html>
