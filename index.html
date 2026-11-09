@@ -69,19 +69,7 @@
   h1{font-size:17px;font-weight:650;margin:0;letter-spacing:-.01em}
   .sub{font-size:11.5px;color:rgba(255,255,255,.66);margin-top:1px}
   .stamp{font-size:11.5px;color:rgba(255,255,255,.72);font-variant-numeric:tabular-nums}
-  .grandrow{display:flex;align-items:flex-end;gap:26px;flex-wrap:wrap;margin-top:16px;position:relative}
-  .grand .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.66);font-weight:650}
-  .grand .val{font-size:30px;font-weight:750;letter-spacing:-.025em;line-height:1.15;color:var(--lime)}
-  .grand.sm .val{font-size:18px;font-weight:600;color:rgba(255,255,255,.9)}
-  .fx{
-    margin-top:16px;position:relative;background:rgba(255,255,255,.1);
-    border:1px solid rgba(255,255,255,.16);border-radius:11px;padding:10px 12px;
-    display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;color:rgba(255,255,255,.9);
-  }
-  .fx .fxmain{display:flex;align-items:baseline;gap:7px;font-variant-numeric:tabular-nums}
-  .fx .fxmain b{font-size:15px;font-weight:700;color:#fff}
-  .fx .src{font-size:11px;color:rgba(255,255,255,.62)}
-  .fx .spacer{flex:1 1 10px}
+  .meta{display:flex;align-items:center;gap:11px;flex-wrap:wrap;justify-content:flex-end}
   .pill{
     display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:650;
     padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.16);color:rgba(255,255,255,.9);
@@ -208,7 +196,6 @@
   @media (max-width:560px){
     .wrap{padding:12px 11px 72px}
     header.top{padding:16px 14px 14px}
-    .grand .val{font-size:25px}
     .kpis{gap:10px}
     .kpi{padding:11px 12px}
     .kpi .v{font-size:18px}
@@ -230,26 +217,13 @@
         <div class="mark">PF</div>
         <div>
           <h1>Resumen por empresa</h1>
-          <div class="sub">Panel de Fondos · bancos e inversiones consolidados</div>
+          <div class="sub">Panel de Fondos · bancos e inversiones de cada empresa</div>
         </div>
       </div>
-      <span class="stamp" id="stamp"></span>
-    </div>
-    <div class="grandrow">
-      <div class="grand">
-        <div class="lbl" id="lblGs">Total consolidado · Gs.</div>
-        <div class="val" id="grandVal">—</div>
+      <div class="meta">
+        <span class="stamp" id="stamp"></span>
+        <span class="pill"><span class="dot"></span><span>Sólo lectura</span></span>
       </div>
-      <div class="grand sm">
-        <div class="lbl" id="lblUsd">Total consolidado · USD</div>
-        <div class="val" id="grandUsd">—</div>
-      </div>
-    </div>
-    <div class="fx">
-      <div class="fxmain" id="fxMain"><span>US$ 1 =</span><b id="fxRate">—</b><span>Gs.</span></div>
-      <span class="src" id="fxSrc"></span>
-      <span class="spacer"></span>
-      <span class="pill"><span class="dot"></span><span>Sólo lectura</span></span>
     </div>
   </header>
 
@@ -579,29 +553,7 @@ window.DATOS_RESPALDO = null;
 
   /* ---------- render ---------- */
   function paintHeader(){
-    var R = resumen(), r = rate();
-    var d = fmtDate(state.fx.asOf, false);
-
-    if (sinTc()){
-      // cada moneda por separado, sin convertir
-      document.getElementById('lblGs').textContent = 'Total en guaraníes';
-      document.getElementById('lblUsd').textContent = 'Total en dólares';
-      document.getElementById('grandVal').textContent = gs(R.tot.pyg);
-      document.getElementById('grandUsd').textContent = usd(R.tot.usd);
-      document.getElementById('fxMain').style.display = 'none';
-      document.getElementById('fxSrc').textContent =
-        'Cada monto en su moneda original · sin conversión';
-    } else {
-      document.getElementById('lblGs').textContent = 'Total consolidado · Gs.';
-      document.getElementById('lblUsd').textContent = 'Total consolidado · USD';
-      document.getElementById('grandVal').textContent = gs(R.tot.gs);
-      document.getElementById('grandUsd').textContent = usd(R.tot.gs / r);
-      document.getElementById('fxMain').style.display = '';
-      document.getElementById('fxRate').textContent = fmtPyg.format(Math.round(r));
-      document.getElementById('fxSrc').textContent =
-        (state.fx.source || 'cotización diaria') + (d ? ' · ' + d : '');
-    }
-
+    var R = resumen();
     var s = fmtDate(state.actualizado, true);
     document.getElementById('stamp').textContent = s ? 'Actualizado ' + s + ' hs' : '';
     return R;
@@ -622,6 +574,13 @@ window.DATOS_RESPALDO = null;
     return c;
   }
 
+  /* Valor y subtítulo de un indicador cuando conviven las dos monedas */
+  function kpiMoneda(pyg, usdVal, vacio){
+    if (!pyg && !usdVal) return { v:'—', s:vacio };
+    if (pyg && usdVal) return { v:gs(pyg), s:'+ ' + usd(usdVal) };
+    return pyg ? { v:gs(pyg), s:vacio } : { v:usd(usdVal), s:vacio };
+  }
+
   function kpisEl(R){
     var box = el('div', 'kpis');
     var t = R.tot;
@@ -633,14 +592,12 @@ window.DATOS_RESPALDO = null;
 
     if (sinTc()){
       // sin tipo de cambio no hay porcentajes del total: se muestran las dos monedas
-      box.appendChild(kpiEl('En bancos',
-        t.bancosPyg ? gs(t.bancosPyg) : usd(t.bancosUsd),
-        (t.bancosPyg && t.bancosUsd) ? '+ ' + usd(t.bancosUsd) : 'suma de las cuentas bancarias'));
-      box.appendChild(kpiEl('En inversiones',
-        t.invPyg ? gs(t.invPyg) : usd(t.invUsd),
-        (t.invPyg && t.invUsd) ? '+ ' + usd(t.invUsd) : 'suma de los fondos mutuos'));
-      box.appendChild(kpiEl('En dólares', usd(t.usd),
-        t.pyg ? 'y ' + gs(t.pyg) + ' en guaraníes' : 'no hay saldos en guaraníes'));
+      var kb = kpiMoneda(t.bancosPyg, t.bancosUsd, 'suma de las cuentas bancarias');
+      var ki = kpiMoneda(t.invPyg, t.invUsd, 'suma de los fondos mutuos');
+      box.appendChild(kpiEl('En bancos', kb.v, kb.s));
+      box.appendChild(kpiEl('En inversiones', ki.v, ki.s));
+      box.appendChild(kpiEl('En dólares', t.usd ? usd(t.usd) : '—',
+        t.pyg ? 'y ' + gs(t.pyg) + ' en guaraníes' : 'sin saldos en guaraníes'));
     } else {
       box.appendChild(kpiEl('En bancos', gs(t.bancos),
         pct(t.bancos, t.gs) + ' del total', t.gs ? t.bancos / t.gs : 0));
