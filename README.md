@@ -67,11 +67,12 @@ cada vez que se abren).
 Las páginas funcionan de las dos maneras y se dan cuenta solas:
 
 - **Sin tipo de cambio** (la fila `tc` de la hoja `DATOS` vacía, que es como está hoy):
-  cada monto se muestra en su moneda original y nada se convierte. Arriba aparecen dos
-  totales, uno en guaraníes y otro en dólares; el gráfico se parte en dos rankings, uno
-  por moneda; y donde una empresa tiene las dos, se muestra `Gs. 42.000.000 + US$ 2.000`.
-- **Con tipo de cambio** (cargando la celda **B4 de la hoja `Consolidado`**): vuelven el
-  total consolidado en guaraníes, los porcentajes del total y el ranking único.
+  cada monto se muestra en su moneda original y nada se convierte. El gráfico se parte
+  en dos rankings, uno por moneda, y donde una empresa tiene las dos se muestra
+  `Gs. 42.000.000 + US$ 2.000`. En el detalle fondo por fondo los totales de arriba
+  aparecen separados, uno en guaraníes y otro en dólares.
+- **Con tipo de cambio** (cargando la celda **B4 de la hoja `Consolidado`**): vuelven los
+  porcentajes del total, el ranking único y, en el detalle, el total consolidado en guaraníes.
 
 No hay nada que tocar en los archivos para pasar de un modo al otro: depende sólo de si
 la planilla trae cotización o no.
